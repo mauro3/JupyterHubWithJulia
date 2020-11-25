@@ -5,7 +5,8 @@
 
 . ./settings_linode_tljh_julia.sh
 
-export users=/home/jupyter-*
+cd /home
+export users=jupyter-*
 
 for user in $users
 do
