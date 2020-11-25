@@ -1,0 +1,296 @@
+#+Title: How to install The Littlest JupyterHub (TLJH) with a Julia kernel
+
+I sure took me some time to figure this once out... and the jury is
+still out on whether this is a good approach.  The Littlest JupyterHub
+install itself was a breeze but the Julia side of things was not.
+
+These are notes to myself plus scripts to do the install on a
+Linode.com server.  But maybe useful to others too.  If you have
+questions or corrections, open an issue/pull-request.
+
+* Global settings
+All global settings are contained within
+~settings_linode_tljh_julia.sh~ which is derived from editing
+[[./settings_linode_tljh_julia_TEMPLATE.sh]].  These settings are used
+throughout the install, so it is assumed that this file is sourced
+before executing the commands listed below.
+
+* Linode setup
+Linode.com offers Linux servers in the cloud.  Currently there are
+quite a few $100-credit offers around, that's why I started here.
+
+Install:
+- Ubuntu 20.04 LTS (However, the following should work on any Ubuntu
+  20.04 LTS server and on most other Linux distros with little
+  change.)
+- at least 2GB of RAM (but much more for multi-user)
+
+** StackScript
+This is the stack script to execute.  You can upload it at creation of
+the server, or paste it into a file once the server is running and
+execute it.  The last command, ~ufw enable~ will ask for user
+confirmation, so maybe not useful as a StackScript.
+
+[[./linode_install.sh]]
+
+** Setting a Domain Record via http://linode.com
+Having an actual url is needed for HTTPS access.
+
+If you have a Domain at Linode, otherwise see below:
+- Go to https://cloud.linode.com/domains/
+- click "Add an A/AAAA Record"
+- Settings
+  Hostname: whatever-your-hostname-is
+  IP address: copy from your server
+  TTL: 5min (this sets on how quickly records propagate through DNS on changes)
+
+For the domain transfer I followed
+https://merelycurious.me/post/connecting-namecheap-domain-to-linode.
+
+** HTTPS
+*Done via The Littelest JuptyterHub install, which is super easy*
+
+But here some notes on how to do it without using the TLJH machinery:
+
+Let's encrypt: [[https://www.linode.com/docs/guides/install-lets-encrypt-to-create-ssl-certificates/][docs]]
+- root@localhost:/opt/letsencrypt# ./letsencrypt-auto certonly --standalone -d example.com -d jhub.example.com -d docker.example.com
+  -> does not work
+- loosly follow instead
+  https://www.rosehosting.com/blog/how-to-install-lets-encrypt-on-ubuntu-20-04-with-apache/
+  - apt install software-properties-common
+  - apt update
+  - apt install certbot
+  - certbot certonly --standalone -d jhub.example.com
+  - keys are in /etc/letencrypt
+
+
+* The littelest JuliaHub (TLJH) install
+
+Up-front notes:
+
+There are two terminals once TLJH is running:
+  - the normal shell (via ssh)
+  - the terminal in the web-interface
+The latter has some special environment variables set, so sometimes
+it's required to do it there.
+
+Setup some variables:
+- admin account for TLJH
+- domain name (only needed when doing HTTPS)
+
+All of this section is contained in the script:
+- [[./tljh_install.sh]] (run as root)
+
+** Install
+Now install following
+https://tljh.jupyter.org/en/latest/install/custom-server.html
+#+begin_src
+curl -L https://tljh.jupyter.org/bootstrap.py | python3 - --admin $jupyteradmin
+#+end_src
+
+*Don't create users yet*, see [[*Deployment for users][Deployment for users]], nor install extra
+packages yet.
+
+** HTTPS
+- Using Let's Encrypt
+- this only works once the domain is set in DNS manager.
+- It's done through TLJH
+  https://tljh.jupyter.org/en/latest/howto/admin/https.html#howto-admin-https
+
+At the ssh-root-shell:
+#+begin_src
+tljh-config set https.enabled true
+tljh-config set https.letsencrypt.email glads@runbox.com
+tljh-config add-item https.letsencrypt.domains $fqdn
+#+end_src
+Check and reload:
+#+begin_src
+tljh-config show
+tljh-config reload proxy
+#+end_src
+
+** TLJH config
+*Kernel shutdown time*
+
+The Jupyter-kernel of each user will shut down after some idle time,
+10min by default.
+Probably increase this as julia takes time to startup.
+Ref: https://tljh.jupyter.org/en/latest/topic/idle-culler.html?highlight=timeout
+
+At the root-shell:
+#+begin_src
+tljh-config set services.cull.timeout 3600
+tljh-config reload
+#+end_src
+
+*Limit CPU & RAM*
+https://tljh.jupyter.org/en/latest/topic/tljh-config.html?highlight=environment#user-server-limits
+#+begin_src
+tljh-config set limits.memory 1G
+tljh-config set limits.cpu 1
+tljh-config reload
+#+end_src
+
+** A note on Passwords
+The default install is that each user sets their password on the first
+login: https://tljh.jupyter.org/en/latest/howto/auth/firstuse.html
+
+- change your own password on
+  https://jhub.example.com/hub/auth/change-password
+- admin can reset user password with
+  https://tljh.jupyter.org/en/latest/install/custom-server.html
+- admin can reset admin password with
+  https://tljh.jupyter.org/en/latest/howto/admin/admin-users.html
+
+
+* Package & Julia install once TLJH is running
+This is the tricky bit, or more precisely, the Julia side of it.
+
+*I recommend to backup your server now.* On Linode there is the "Manual
+Snapshot" option in the "Backups" tab, probably best to first shutdown
+the server though.  That way you can get back to the good install.
+For me, the size of the Linode backup was 32GB.
+
+This section is contained in the script:
+- [[./tljh_web_interface_install.sh]] (run as jupyter-admin or at web-terminal)
+
+** Machine-wide Python packages install
+https://tljh.jupyter.org/en/latest/howto/env/user-environment.html
+
+Install from web-terminal:
+#+begin_src
+sudo -E pip install numpy
+sudo -E pip install matplotlib
+sudo -E pip install scipy
+#+end_src
+This will spew some warnings about "WARNING: The directory
+'/home/jupyter-admin/.cache/pip/http' or its parent directory is not
+owned by the current user"; as far as I can tell, those are ok.
+
+** Machine-wide Julia install (ok, TLJH-wide installation)
+
+TODO: Use a sys-image??? [[*Sysimage][Sysimage]]
+
+As admin within web-interface:
+
+*** Conda install Julia
+
+At the web-interace terminal:
+#+begin_src
+sudo -E conda install -c rmg julia
+#+end_src
+
+*** Variables to be set/customized
+#+begin_src
+export julia_global_depot=$(julia -e 'print(DEPOT_PATH[2])') # if not using this default, DEPOT_PATH will need to reflect this
+#+end_src
+
+*** Julia package install
+This is where it gets a bit dicey.  I do the following:
+- the JupyterHub admin ~$jupyteradmin$ installs the system-wide
+  packages using a custom project (aka environment, i.e. a folder
+  containing Project.toml & Manifest.toml) and into a system-wide
+  depot.
+- To make these packages available to users, those to *.toml files
+  need to be copied to the user's ~.julia/environments/v1.4~ folder.
+  This is done in a subsequent step, see [[*Enable TLJH-wide Julia packages][Enable TLJH-wide Julia packages]].
+- Ideally, a sysimage would then be created with the installed
+  packages for speedy startup: [[*Julia Sysimage (WIP)][Julia Sysimage (WIP)]].
+
+Make special environment and global depot-folder (at web-interace terminal):
+#+begin_src
+sudo -E mkdir -p $julia_global_env
+sudo -E touch $julia_global_env/Project.toml
+
+sudo -E mkdir -p $julia_global_depot
+#+end_src
+
+**** IJulia install
+Note that by running this within the web-interface terminal, it will
+pick up the Python & Julia install of TLJH.  The jupyter-kernel needs
+to be copied by hand.
+
+At the web-interace terminal (this assumes Julia 1.4):
+#+begin_src
+sudo -E julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add("IJulia"); Pkg.precompile()'
+sudo -E cp -r ~/.local/share/jupyter/kernels/julia-* /opt/tljh/user/share/jupyter/kernels
+sudo -E chmod -R +rx $julia_global_depot
+sudo -E chmod -R +rx /opt/tljh/user/share/jupyter/kernels
+#+end_src
+
+TODO:
+- doing the chmod on $julia_depot_path makes the
+  $julia_depot_path/registries/General dirty and thus not updateable!
+
+Adapted from https://github.com/dclong/docker-jupyterhub-julia/blob/master/Dockerfile
+
+**** Install more Julia package
+
+At the web-interface terminal (this assumes Julia 1.4):
+#+begin_src
+sudo -E julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add.(["PyPlot", "OrdinaryDiffEq"]); ; Pkg.precompile()'
+#+end_src
+
+Note, the precompilation should work for all users (I think).
+
+**** Julia Sysimage (WIP)
+create a sysimage with
+- IJulia
+- PyPlot
+- OrdinaryDiffEq
+
+https://julialang.github.io/PackageCompiler.jl/dev/sysimages/
+
+Precompile script ~tmp.jl~:
+#+begin_src
+using PyPlot, OrdinaryDiffEq, IJulia
+
+PyPlot.ion() # not sure about this one
+plot(rand(10), rand(10))
+imshow(rand(10,10))
+
+S0=0.1
+Q=0.1
+tspan = (0.0, 20.0)
+prob = ODEProblem((S,Q,T) -> S, S0, tspan, Q) # pass-in Q as parameter
+sol = solve(prob, Tsit5()) # solve the ODE.
+
+notebook()
+#+end_src
+
+All in all
+
+create_sysimage([:PyPlot, :OrdinaryDiffEq, :IJulia], sysimage_path="/tmp/sysimg2.so", precompile_execution_file="tmp.jl")
+
+* Deployment for users
+
+This section is contained in the script:
+- [[./tljh_user_setup.sh]] (run as root)
+
+** Create users
+
+Via the "Admin" panel in the web interface.
+
+*** Enable TLJH-wide Julia packages
+Essentially, the Project.toml and Manifest.toml need to reflect the
+system-wide install (plus extra user installs).  If that is given,
+then Julia will use the system-wise installed packages found deeper in
+the DEPOT_PATH (and also the pre-compiled caches).
+
+This is achieved by copying over the *.toml from ~$julia_admin_env~.
+
+At the SSH-terminal, note the username is pre-pended with "jupyter-"
+#+begin_src
+sudo -u $user mkdir -p /home/$user/.julia/environments/v1.4
+sudo -u $jupyteradmin_user mkdir /tmp/transfer
+sudo -u $jupyteradmin_user cp $julia_admin_env/*  /tmp/transfer
+sudo -u $user cp /tmp/transfer/* /home/$user/.julia/environments/v1.4
+#+end_src
+
+TODO: this will overwrite the users' Project.toml!  Merge instead.
+
+** Make environment for each user.
+
+Question:
+- how to deploy notebooks
+- how to let them collaborate
