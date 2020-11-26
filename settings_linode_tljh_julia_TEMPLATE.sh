@@ -25,13 +25,13 @@ export tljh_timeout=3600
 # memory limit of each user
 export tljh_limits_memory=1G
 # CPU-core limit of each user
-export tljh_limits_cpt=1
+export tljh_limits_cpu=1
 # set path to get python and julia of TLJH
 # https://tljh.jupyter.org/en/latest/howto/env/user-environment.html#accessing-user-environment-outside-jupyterhub
 export PATH=/opt/tljh/user/bin:${PATH}
 
 ## For Julia
-export julia_global_env=/home/$jupyteradmin_user/julia-admin/environments/v1.4
-# packages to be installed system-wide, separate entries with ":"
+
+# Packages to be installed system-wide, separate entries with ":"
 # (IJulia gets installed irrespective)
 export julia_packages=

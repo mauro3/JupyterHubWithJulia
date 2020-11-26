@@ -11,6 +11,13 @@
 # - https://www.linode.com/docs/guides/getting-started/
 # - https://www.linode.com/docs/guides/securing-your-server/
 
+## Settings
+# make sure settings file is there
+if [ ! -f "settings_linode_tljh_julia.sh" ]; then
+    echo "settings_linode_tljh_julia.sh does not exist! Exiting..."
+    exit 1
+fi
+# get settings
 . ./settings_linode_tljh_julia.sh
 
 # IPv4 address of the linode
@@ -34,7 +41,7 @@ if [ ! -v $domain ]; then
 fi
 
 # ssh
-# disable password loging
+# disable password login
 echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 systemctl restart sshd
 
@@ -45,13 +52,11 @@ ufw default deny incoming
 ufw limit ssh
 ufw allow https
 ufw allow http
+# ufw enable
+yes | ufw enable
 
 ## JupyterHub install
 # follows
 # https://tljh.jupyter.org/en/latest/install/custom-server.html
 # Install dependencies, the rest is done with tljh_install.sh.
 apt install python3 python3-dev git curl -y
-
-
-# ufw enable: this will need user interaction!
-ufw enable
