@@ -72,11 +72,9 @@ There are two terminals once TLJH is running:
   - the normal shell (via ssh)
   - the terminal in the web-interface
 The latter has some special environment variables set, so sometimes
-it's required to do it there.
-
-Setup some variables:
-- admin account for TLJH
-- domain name (only needed when doing HTTPS)
+it's required to execute scripts there or at the normal shell as
+jupyter-admin user and after sourcing [[./settings_linode_tljh_julia.sh]]
+(and thus adding ~/opt/tljh/user/bin~ to the ~PATH~).
 
 All of this section is contained in the script:
 - [[./tljh_install.sh]] (run as root)
@@ -286,5 +284,5 @@ TODO: this will overwrite the users' Project.toml!  Merge instead.
 ** Make environment for each user.
 
 Question:
-- how to deploy notebooks
-- how to let them collaborate
+- how to deploy notebooks?
+- how to let the users collaborate?
