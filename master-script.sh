@@ -1,11 +1,20 @@
-# edit settings_linode_tljh_julia_TEMPLATE.sh and save as settings_linode_tljh_julia.sh
+#!/bin/bash
+# Master script.
 
-# run as root
+## Settings
+# Edit settings_linode_tljh_julia_TEMPLATE.sh and save as settings_linode_tljh_julia.sh
+
+# make sure settings file is there
+if [ ! -f "settings_linode_tljh_julia.sh" ]; then
+    echo "settings_linode_tljh_julia.sh does not exist! Exiting..."
+    exit 1
+fi
+# get settings
+. ./settings_linode_tljh_julia.sh
+
+# Finishes the server install
 ./linode_install.sh
+# Does the TLJH install
 ./tljh_install.sh
-
-# run as jupyter-admin
-./tljh_web_interface_install.sh
-
-# run as root
-./tljh_user_setup.sh
+# Installs packages, in particular IJulia to provide the Julia kernel
+./tljh_package_installs.sh

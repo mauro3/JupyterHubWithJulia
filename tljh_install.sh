@@ -41,3 +41,5 @@ tljh-config set limits.cpu $tljh_limits_cpu
 tljh-config reload
 
 echo "Now is probably a good time to make a backup of the server so it can be reverted to this state."
+
+echo "Then as the next step: login with your $jupyteradmin on the website."

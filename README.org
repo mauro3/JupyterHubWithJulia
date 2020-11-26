@@ -79,6 +79,9 @@ jupyter-admin user and after sourcing [[./settings_linode_tljh_julia.sh]]
 All of this section is contained in the script:
 - [[./tljh_install.sh]] (run as root)
 
+Make sure to login on the web-site with your jupyter-admin, this will
+trigger it becoming an actual unix-user on your system.
+
 ** Install
 Now install following
 https://tljh.jupyter.org/en/latest/install/custom-server.html
@@ -148,6 +151,9 @@ This is the tricky bit, or more precisely, the Julia side of it.
 Snapshot" option in the "Backups" tab, probably best to first shutdown
 the server though.  That way you can get back to the good install.
 For me, the size of the Linode backup was 32GB.
+
+Make sure to *login on the web-site* with your jupyter-admin, this will
+trigger it becoming an actual unix-user on your system.
 
 This section is contained in the script:
 - [[./tljh_web_interface_install.sh]] (run as jupyter-admin or at web-terminal)
@@ -263,26 +269,33 @@ This section is contained in the script:
 
 Via the "Admin" panel in the web interface.
 
-*** Enable TLJH-wide Julia packages
-Essentially, the Project.toml and Manifest.toml need to reflect the
-system-wide install (plus extra user installs).  If that is given,
-then Julia will use the system-wise installed packages found deeper in
-the DEPOT_PATH (and also the pre-compiled caches).
+Note that the corresponding unix users will only be created upon the
+first login.
 
-This is achieved by copying over the *.toml from ~$julia_admin_env~.
+Before you let the users login, finish this section though.
 
-At the SSH-terminal, note the username is pre-pended with "jupyter-"
+** Julia specific tricks
+
+Each user home-folder needs to contain
+~./julia/environments/v1.4/Project.toml~, otherwise user installs will
+try to modify the global
+~/opt/tljh/user/share/julia/site/julia-1.4.2/local/share/julia/environments/v1.4/Project.toml~
+which will fail due to read-only permissions.
+
+The ~/etc/skel~ folder comes to the rescue ([[https://tljh.jupyter.org/en/latest/howto/content/share-data.html#add-a-link-to-the-shared-folder-in-the-user-home-directory][docs]]):
 #+begin_src
-sudo -u $user mkdir -p /home/$user/.julia/environments/v1.4
-sudo -u $jupyteradmin_user mkdir /tmp/transfer
-sudo -u $jupyteradmin_user cp $julia_admin_env/*  /tmp/transfer
-sudo -u $user cp /tmp/transfer/* /home/$user/.julia/environments/v1.4
+mkdir -p /etc/skel/julia/environments/v1.4
+touch /etc/skel/julia/environments/v1.4/Project.toml
 #+end_src
 
-TODO: this will overwrite the users' Project.toml!  Merge instead.
+** Further stuff to do
 
-** Make environment for each user.
-
-Question:
-- how to deploy notebooks?
-- how to let the users collaborate?
+- how to deploy notebooks? See [[https://tljh.jupyter.org/en/latest/howto/content/nbgitpuller.html][nbgitpuller]]
+- [[https://tljh.jupyter.org/en/latest/howto/content/share-data.html#option-3-create-a-directory-for-users-to-share-notebooks-and-other-files][how to let the users collaborate]]
+#+begin_src
+mkdir -p /srv/scratch
+chown  root:jupyterhub-users /srv/scratch
+chmod 777 /srv/scratch
+chmod g+s /srv/scratch
+ln -s /srv/scratch /etc/skel/scratch
+#+end_src
