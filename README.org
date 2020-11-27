@@ -15,7 +15,7 @@ questions or corrections, open an issue/pull-request.
 - edit ~settings_tljh_julia.sh~ to your liking
 - optional but needed for HTTPS: give the server a domain name by setting
   the DNS records
-- run ~./tljh_install.sh~ (as root)
+- run ~./tljh_install.sh~ (as root).  This will take about 10-20min.
 - login on your JupyterHub website as root and make user accounts
 - done
 
@@ -112,7 +112,7 @@ Up-front note: there are two terminals once TLJH is running:
   - the normal shell (via ssh)
   - the terminal in the web-interface
 The latter has some special environment variables set, namely the
-~$PATH$~.  The setup described here uses the normal shell exclusively
+~$PATH~.  The setup described here uses the normal shell exclusively
 (by setting the ~$PATH~), this is a bit different to the docs on
 https://tljh.jupyter.org/en/latest/index.html.
 
@@ -144,7 +144,7 @@ is set.
 
 #+begin_src
 tljh-config set https.enabled true
-tljh-config set https.letsencrypt.email glads@runbox.com
+tljh-config set https.letsencrypt.email $email4letsencrypt
 tljh-config add-item https.letsencrypt.domains $fqdn
 #+end_src
 Check and reload:
@@ -176,7 +176,7 @@ tljh-config set limits.cpu 1
 tljh-config reload
 #+end_src
 
-** A note on Passwords
+** A note on JupyterHub Passwords
 The default install is that each user sets their password on the first
 login: https://tljh.jupyter.org/en/latest/howto/auth/firstuse.html
 
@@ -188,7 +188,7 @@ login: https://tljh.jupyter.org/en/latest/howto/auth/firstuse.html
   https://tljh.jupyter.org/en/latest/howto/admin/admin-users.html
 
 
-* Package & Julia install once TLJH is running
+* Package & Julia install
 This was the tricky bit to figure out, or more precisely, the Julia
 side of it is a bit tricky.
 
@@ -280,7 +280,7 @@ have their own environment at the moment, give it to them:
 mkdir -p /etc/skel/.julia/environments/v1.4
 touch /etc/skel/.julia/environments/v1.4/Project.toml
 #+end_src
-This uses the ~/etc/skel~ directory which is used as template when a
+This uses the ~/etc/skel~ directory which is used as template (by Linux) when a
 user is created.
 
 But now their own environment shadows the global one, to rectify this
@@ -292,6 +292,7 @@ echo "push!(LOAD_PATH, "\"$julia_global_env\"")" >> /etc/skel/.julia/config/star
 #+end_src
 
 **** Julia Sysimage (WIP)
+This is work in progress.  If I get to run it, I'll update here.
 Create a sysimage with the globally installed packages.
 
 https://julialang.github.io/PackageCompiler.jl/dev/sysimages/
@@ -309,12 +310,13 @@ All in all:
 
 ~create_sysimage([packages...], sysimage_path="/tmp/sysimg2.so", precompile_execution_file="tmp.jl")~
 
-* Deployment for users
-
+* All done, mostly
 The script [[./tljh_install.sh][tljh_install.sh]] finished with the last section.  Here some
 additional and/or extra steps.
 
-** Create users
+** Deployment for users
+
+*** Create users
 
 Login as admin user on the web-page and go to the "Admin" panel in the
 web interface.
@@ -322,7 +324,7 @@ web interface.
 Note that the corresponding unix users will only be created upon their
 first login.
 
-** Extra stuff to do
+*** Extra stuff to do
 
 See [[./tljh_extras.sh][tljh_extras.sh]].
 
