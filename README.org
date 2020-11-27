@@ -10,7 +10,7 @@ Ubuntu server.  It maybe useful to others too.  If you have
 questions or corrections, open an issue/pull-request.
 
 *TL;DR*
-- clone this repo to your server
+- clone this repo to your server: ~git clone https://github.com/mauro3/JupyterHubWithJulia.git~
 - copy ~settings_tljh_julia_TEMPLATE.sh~ to ~settings_tljh_julia.sh~
 - edit ~settings_tljh_julia.sh~ to your liking
 - optional but needed for HTTPS: give the server a domain name by setting
@@ -328,7 +328,10 @@ first login.
 
 See [[./tljh_extras.sh][tljh_extras.sh]].
 
-- how to deploy notebooks? See [[https://tljh.jupyter.org/en/latest/howto/content/nbgitpuller.html][nbgitpuller]]
+
+- how to deploy notebooks?
+  - See [[https://tljh.jupyter.org/en/latest/howto/content/nbgitpuller.html][nbgitpuller]]
+  - add them to ~/etc/skel~
 - [[https://tljh.jupyter.org/en/latest/howto/content/share-data.html#option-3-create-a-directory-for-users-to-share-notebooks-and-other-files][how to let the users collaborate]]:
 #+begin_src
 mkdir -p /srv/scratch
