@@ -1,20 +1,68 @@
 #!/bin/bash
 #
-# Installs The Littelest JupyterHub.
+# This installs The Littlest JupyterHub with a Julia Kernel on a Ubuntu server.
+# (Tested on Linode.com with Ubuntu 20.04 LTS)
 #
-# Exectue as root at the ssh-shell
+# Make sure to create a settings_tljh_julia.sh from
+# settings_tljh_julia_TEMPLATE.sh?"
 
 ## Settings
 # make sure settings file is there
-if [ ! -f "settings_linode_tljh_julia.sh" ]; then
-    echo "settings_linode_tljh_julia.sh does not exist! Exiting..."
+if [ ! -f "settings_tljh_julia.sh" ]; then
+    echo "settings_tljh_julia.sh does not exist!"
+    echo "Did you edit and rename settings_tljh_julia_TEMPLATE.sh?"
+    echo "Exiting..."
     exit 1
 fi
 # get settings
-. ./settings_linode_tljh_julia.sh
+. ./settings_tljh_julia.sh
+
+# IPv4 address of the server
+ip4=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+# ip4=$(hostname -i | cut - -d" " -f2)
+
+###############################
+## Server (Linode) base install
+###############################
+
+## Update packages
+apt update
+apt upgrade -y
+
+timedatectl set-timezone $timezone
+
+## Networking
+echo $hostname > /etc/hostname
+hostname -F /etc/hostname
+# This sets the Fully Qualified Domain Name
+if [ ! -v $domain ]; then
+    echo $ip4 $fqdn >> /etc/hosts
+fi
+
+## SSH
+# disable password login
+echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
+systemctl restart sshd
+
+## Firewall
+apt install ufw
+ufw default allow outgoing
+ufw default deny incoming
+ufw limit ssh
+ufw allow https
+ufw allow http
+# ufw enable
+yes | ufw enable
+
+##################################
+## The Littlest JupyterHub install
+##################################
+# follows https://tljh.jupyter.org/en/latest/install/custom-server.html
+
+## Install dependencies
+apt install python3 python3-dev git curl -y
 
 ## Install TLJH
-# https://tljh.jupyter.org/en/latest/install/custom-server.html
 curl -L https://tljh.jupyter.org/bootstrap.py | python3 - --admin $jupyteradmin
 
 ## HTTPS setup with Let's encrypt (if $email4letsencrypt is not empty)
@@ -28,9 +76,9 @@ if [ ! -v $email4letsencrypt ]; then
     tljh-config reload proxy
 fi
 
-
 ## TLJH config
-# timeout after which server shuts down
+
+# Set timeout after which server shuts down
 # https://tljh.jupyter.org/en/latest/topic/idle-culler.html?highlight=timeout
 tljh-config set services.cull.timeout $tljh_timeout
 # Limit CPU & RAM
@@ -40,6 +88,59 @@ tljh-config set limits.memory $tljh_limits_memory
 tljh-config set limits.cpu $tljh_limits_cpu
 tljh-config reload
 
-echo "Now is probably a good time to make a backup of the server so it can be reverted to this state."
+#################################################
+# Python and Julia package installs (system-wide)
+#################################################
+# Including installing the Julia Jupyter-kernel
 
-echo "Then as the next step: login with your $jupyteradmin on the website."
+## Install python packages (that's easy)
+pip install numpy
+pip install matplotlib
+pip install scipy
+
+## Install Julia via conda
+# TODO: install Julia binaries instead
+conda install -y -c rmg julia
+
+## Install Julia packages
+# This is the tricky bit and requires a bit of juggling with the DEPOT_PATH
+# and different environments.
+
+# the packages are installed into this depot:
+export julia_global_depot=$(julia -e 'print(DEPOT_PATH[2])')
+# (if not using this default, DEPOT_PATH will need to reflect this)
+mkdir -p $julia_global_depot
+
+# The correponding environment is (another one could be chosen):
+export julia_global_env=$julia_global_depot/environments/v1.4
+mkdir -p $julia_global_env
+touch $julia_global_env/Project.toml
+# Note, this env needs to be made available to the user in startup.jl or by other means.
+# --> see below
+
+# Install IJulia
+julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add("IJulia"); Pkg.precompile()'
+# and make the kernel available to TLJH
+cp -r ~/.local/share/jupyter/kernels/julia-* /opt/tljh/user/share/jupyter/kernels
+
+# Install more packages
+julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
+
+# The installed packages are availabe to all users now.
+# But to avoid user-installs trying to write to the global Project.toml,
+# give them their own Project.toml by adding it to /etc/skel.
+mkdir -p /etc/skel/.julia/environments/v1.4
+touch /etc/skel/.julia/environments/v1.4/Project.toml
+mkdir -p /etc/skel/.julia/config
+echo "# Add load-path to globally installed packages" > /etc/skel/.julia/config/startup.jl
+echo "push!(LOAD_PATH, "\"$julia_global_env\"")" >> /etc/skel/.julia/config/startup.jl
+
+
+##########
+# All done
+##########
+echo "Install finished!"
+echo "Have a look at the tljh_extras.sh scripts for extras."
+
+echo "Then login with your admin account $jupyteradmin on $fqdn (or $ip4 if you have no url)."
+echo "Create your users using the web-control panel."
