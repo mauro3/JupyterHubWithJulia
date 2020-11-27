@@ -40,9 +40,11 @@ if [ ! -v $domain ]; then
 fi
 
 ## SSH
-# disable password login
-echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
-systemctl restart sshd
+# disable password login if there is a SSH key for login
+if [ -f "/root/.ssh/authorized_keys" ]; then
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
+    systemctl restart sshd
+fi
 
 ## Firewall
 apt install ufw
@@ -111,7 +113,7 @@ export julia_global_depot=$(julia -e 'print(DEPOT_PATH[2])')
 # (if not using this default, DEPOT_PATH will need to reflect this)
 mkdir -p $julia_global_depot
 
-# The correponding environment is (another one could be chosen):
+# The corresponding environment is (another one could be chosen):
 export julia_global_env=$julia_global_depot/environments/v1.4
 mkdir -p $julia_global_env
 touch $julia_global_env/Project.toml
@@ -141,6 +143,8 @@ echo "push!(LOAD_PATH, "\"$julia_global_env\"")" >> /etc/skel/.julia/config/star
 ##########
 echo "Install finished!"
 echo "Have a look at the tljh_extras.sh scripts for extras."
-
+echo " "
+echo "Probably it is also the time for a reboot, as likely a new Linux-kernel was installed."
+echo " "
 echo "Then login with your admin account $jupyteradmin on $fqdn (or $ip4 if you have no url)."
 echo "Create your users using the web-control panel."

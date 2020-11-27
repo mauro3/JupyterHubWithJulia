@@ -16,7 +16,6 @@ export email4letsencrypt=
 export fqdn=$hostname.$domain
 export timezone="Europe/Zurich"
 
-
 ## For TLJH
 export jupyteradmin=
 export jupyteradmin_user=jupyter-$jupyteradmin
