@@ -338,6 +338,7 @@ See [[./tljh_extras.sh][tljh_extras.sh]].
 - how to deploy notebooks?
   - See [[https://tljh.jupyter.org/en/latest/howto/content/nbgitpuller.html][nbgitpuller]]
   - add them to ~/etc/skel~
+  - copy directories/files to all users with [[./copy_to_users.sh][copy_to_users.sh]] script
 - [[https://tljh.jupyter.org/en/latest/howto/content/share-data.html#option-3-create-a-directory-for-users-to-share-notebooks-and-other-files][how to let the users collaborate]]:
 #+begin_src
 mkdir -p /srv/scratch
