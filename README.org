@@ -2,7 +2,7 @@
 
 I sure took me some time to figure this one out.  [[https://tljh.jupyter.org/en/latest/index.html][The Littlest JupyterHub]]
 install itself was a breeze but the Julia side of things was not as it
-was tricky to find the documentation.  Thanks to @fredrikekre!
+was tricky to find the documentation.  Thanks to @fredrikekre for the help!
 
 These are notes to myself plus a script to do the install on a
 Linode.com server running Ubuntu.  But the script should work on any
