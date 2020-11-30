@@ -170,8 +170,14 @@ tljh-config reload
 
 *Limit CPU & RAM*
 https://tljh.jupyter.org/en/latest/topic/tljh-config.html?highlight=environment#user-server-limits
+
+Note that Julia is quite memory hungry with one Julia notebook taking
+up at least 400MB and more once packages are used (Python notebooks
+start at 130MB).  Thus, set at least 1GB of memory per user, better
+2GB.
+
 #+begin_src
-tljh-config set limits.memory 1G
+tljh-config set limits.memory 2G
 tljh-config set limits.cpu 1
 tljh-config reload
 #+end_src

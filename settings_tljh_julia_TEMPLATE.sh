@@ -22,7 +22,7 @@ export jupyteradmin_user=jupyter-$jupyteradmin
 # how long a user's server stays alive without user interaction
 export tljh_timeout=3600
 # memory limit of each user
-export tljh_limits_memory=1G
+export tljh_limits_memory=2G
 # CPU-core limit of each user
 export tljh_limits_cpu=1
 # set path to get python and julia of TLJH
