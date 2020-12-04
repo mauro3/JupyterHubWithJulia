@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# extra apt installs
+apt install pandoc # for pdf exports
+
 # make shared folder
 mkdir -p /srv/scratch
 chown root:jupyterhub-users /srv/scratch
