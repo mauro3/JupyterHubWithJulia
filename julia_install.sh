@@ -56,6 +56,9 @@ if [ ! -z "$julia_packages" ]
     julia --project=$julia_global_env -e 'Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
 fi
 
+# ensure all users can read General registry
+chmod -R a+rX $julia_global_depot/registries/General/
+
 # The installed packages are availabe to all users now.
 # But to avoid user-installs trying to write to the global Project.toml,
 # give them their own Project.toml by adding it to /etc/skel.
