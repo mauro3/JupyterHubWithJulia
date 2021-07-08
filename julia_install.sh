@@ -53,7 +53,8 @@ cp -r ~/.local/share/jupyter/kernels/julia-$julia_version_short /opt/tljh/user/s
 # Install more packages
 julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.precompile()'
 if [ ! -z "$julia_packages" ]
-    julia --project=$julia_global_env -e 'Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
+then
+    julia --project=$julia_global_env -e 'using Pkg; Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
 fi
 
 # ensure all users can read General registry
