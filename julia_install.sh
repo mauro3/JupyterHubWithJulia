@@ -51,7 +51,10 @@ julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; P
 cp -r ~/.local/share/jupyter/kernels/julia-$julia_version_short /opt/tljh/user/share/jupyter/kernels/
 
 # Install more packages
-julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
+julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.precompile()'
+if [ ! -z "$julia_packages" ]
+    julia --project=$julia_global_env -e 'Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
+fi
 
 # The installed packages are availabe to all users now.
 # But to avoid user-installs trying to write to the global Project.toml,
