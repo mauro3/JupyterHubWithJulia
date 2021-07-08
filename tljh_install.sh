@@ -100,43 +100,7 @@ pip install numpy
 pip install matplotlib
 pip install scipy
 
-## Install Julia via conda
-# TODO: install Julia binaries instead
-conda install -y -c rmg julia
-
-## Install Julia packages
-# This is the tricky bit and requires a bit of juggling with the DEPOT_PATH
-# and different environments.
-
-# the packages are installed into this depot:
-export julia_global_depot=$(julia -e 'print(DEPOT_PATH[2])')
-# (if not using this default, DEPOT_PATH will need to reflect this)
-mkdir -p $julia_global_depot
-
-# The corresponding environment is (another one could be chosen):
-export julia_global_env=$julia_global_depot/environments/v1.4
-mkdir -p $julia_global_env
-touch $julia_global_env/Project.toml
-# Note, this env needs to be made available to the user in startup.jl or by other means.
-# --> see below
-
-# Install IJulia
-julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add("IJulia"); Pkg.precompile()'
-# and make the kernel available to TLJH
-cp -r ~/.local/share/jupyter/kernels/julia-* /opt/tljh/user/share/jupyter/kernels
-
-# Install more packages
-julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
-
-# The installed packages are availabe to all users now.
-# But to avoid user-installs trying to write to the global Project.toml,
-# give them their own Project.toml by adding it to /etc/skel.
-mkdir -p /etc/skel/.julia/environments/v1.4
-touch /etc/skel/.julia/environments/v1.4/Project.toml
-mkdir -p /etc/skel/.julia/config
-echo "# Add load-path to globally installed packages" > /etc/skel/.julia/config/startup.jl
-echo "push!(LOAD_PATH, "\"$julia_global_env\"")" >> /etc/skel/.julia/config/startup.jl
-
+./julia_install $julia_version $julia_packages
 
 ##########
 # All done
