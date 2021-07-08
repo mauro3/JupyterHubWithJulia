@@ -63,7 +63,7 @@ chmod -R a+rX $julia_global_depot/registries/General/
 # The installed packages are availabe to all users now.
 # But to avoid user-installs trying to write to the global Project.toml,
 # give them their own Project.toml by adding it to /etc/skel.
-export julia_local_env_dir=$(julia -e 'using Pkg; Pkg.envdir("/etc/skel/.julia/")')
+export julia_local_env_dir=$(julia -e 'using Pkg; print(Pkg.envdir("/etc/skel/.julia/"))')
 export julia_local_env=$julia_local_env_dir/v$julia_version_short
 mkdir -p $julia_local_env
 touch $julia_local_env/Project.toml
