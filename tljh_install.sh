@@ -100,7 +100,7 @@ pip install numpy
 pip install matplotlib
 pip install scipy
 
-./julia_install $julia_version $julia_packages
+./julia_install.sh $julia_version $julia_packages
 
 ##########
 # All done
