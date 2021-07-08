@@ -18,7 +18,7 @@ export julia_version_short=$(grep -o '^[0-9]*\.[0-9]*' <<< $julia_version)
 export julia_archive_name="julia-$julia_version-linux-x86_64.tar.gz"
 export julia_parent_dir="/opt/julia"
 export julia_dir="$julia_parent_dir/$julia_version"
-wget -O https://julialang-s3.julialang.org/bin/linux/x64/$julia_version_short/$julia_archive_name
+wget -O $julia_archive_name https://julialang-s3.julialang.org/bin/linux/x64/$julia_version_short/$julia_archive_name
 mkdir -p julia-$julia_version
 tar zxf $julia_archive_name julia-$julia_version
 mkdir -p $julia_parent_dir
