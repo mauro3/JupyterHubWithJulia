@@ -24,8 +24,8 @@ tar zxf $julia_archive_name julia-$julia_version
 mkdir -p $julia_parent_dir
 mv -f julia-$julia_version $julia_dir
 # create symlinks
-ln -sf $julia_dir/bin/julia /usr/local/bin/julia-$julia_version
-ln -sf $julia_dir/bin/julia /usr/local/bin/julia-$julia_version_short
+ln -sf $julia_dir/bin/julia /usr/local/bin/julia$julia_version
+ln -sf $julia_dir/bin/julia /usr/local/bin/julia$julia_version_short
 ln -sf $julia_dir/bin/julia /usr/local/bin/julia
 
 ## Install Julia packages
