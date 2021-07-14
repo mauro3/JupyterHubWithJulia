@@ -9,6 +9,9 @@ Linode.com server running Ubuntu.  But the script should work on any
 Ubuntu server and many Linux servers.  It maybe useful to others too.
 If you have questions or corrections, open an issue/pull-request.
 
+Also, I figured out a setup to run TLJH within a virtual machine on a
+(real) server we have and expose it to the internet, see [[https://maurow.bitbucket.io/notes/multipass-vm-port-forwarding.html][here]].
+
 *NOTE*: only run this on a /dedicated server/ (or virtual-machine) as it
 will mess with settings you probably don't want messed with! For
 security reasons, this is also the recommendation from the TLJH-folks ([[https://tljh.jupyter.org/en/latest/install/custom-server.html][link]]).
