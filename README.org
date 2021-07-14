@@ -6,8 +6,12 @@ was tricky to find the documentation.  Thanks to @fredrikekre for the help!
 
 These are notes to myself plus a script to do the install on a
 Linode.com server running Ubuntu.  But the script should work on any
-Ubuntu server.  It maybe useful to others too.  If you have
-questions or corrections, open an issue/pull-request.
+Ubuntu server and many Linux servers.  It maybe useful to others too.
+If you have questions or corrections, open an issue/pull-request.
+
+*NOTE*: only run this on a /dedicated server/ (or virtual-machine) as it
+will mess with settings you probably don't want messed with! For
+security reasons, this is also the recommendation from the TLJH-folks ([[https://tljh.jupyter.org/en/latest/install/custom-server.html][link]]).
 
 *TL;DR*
 - clone this repo to your server: ~git clone https://github.com/mauro3/JupyterHubWithJulia.git~
