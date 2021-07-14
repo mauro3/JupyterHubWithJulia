@@ -28,7 +28,7 @@ export ssl_cert=
 
 ## For TLJH
 ############
-export jupyteradmin=
+export jupyteradmin=admin
 export jupyteradmin_user=jupyter-$jupyteradmin
 # how long a user's server stays alive without user interaction
 export tljh_timeout=3600

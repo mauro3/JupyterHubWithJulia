@@ -12,7 +12,7 @@ if [ "$#" == "0" ]; then
     echo "No Julia install as input arguments <julia_version> <julia_packages> to julia_install.sh are empty"
     exit 0
 fi
-if [ "$#" != "2" ]; then
+if [ "$#" -gt 2 ]; then
   echo "Error: julia_install.sh needs two arguments."
   echo "Usage: `basename $0` <julia_version> <julia_packages>"
   echo "Example: `basename $0` 1.6.1 Plots:StatsBase"
