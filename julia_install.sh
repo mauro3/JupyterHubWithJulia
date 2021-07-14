@@ -8,6 +8,16 @@ if [ "$1" == "-h" ]; then
   echo "Example: `basename $0` 1.6.1 Plots:StatsBase"
   exit 0
 fi
+if [ "$#" == "0" ]; then
+    echo "No Julia install as input arguments <julia_version> <julia_packages> to julia_install.sh are empty"
+    exit 0
+fi
+if [ "$#" != "2" ]; then
+  echo "Error: julia_install.sh needs two arguments."
+  echo "Usage: `basename $0` <julia_version> <julia_packages>"
+  echo "Example: `basename $0` 1.6.1 Plots:StatsBase"
+  exit 1
+fi
 
 # parse arguments
 export julia_version=$1
@@ -51,18 +61,18 @@ julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; P
 cp -r ~/.local/share/jupyter/kernels/julia-$julia_version_short /opt/tljh/user/share/jupyter/kernels/
 
 # Install more packages
-julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.precompile()'
 if [ ! -z "$julia_packages" ]
 then
-    julia --project=$julia_global_env -e 'using Pkg; Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
+    julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
 fi
 
 # ensure all users can read General registry
-chmod -R a+rX $julia_global_depot/registries/General/
+chmod -R a+rX $julia_global_depot
 
 # The installed packages are availabe to all users now.
 # But to avoid user-installs trying to write to the global Project.toml,
 # give them their own Project.toml by adding it to /etc/skel.
+# NOTE: already existing users will not get a fully working Julia install. Manually copy the files in /etc/skel for them.
 export julia_local_env_dir=$(julia -e 'using Pkg; print(Pkg.envdir("/etc/skel/.julia/"))')
 export julia_local_env=$julia_local_env_dir/v$julia_version_short
 mkdir -p $julia_local_env

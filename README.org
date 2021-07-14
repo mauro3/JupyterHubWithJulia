@@ -21,8 +21,6 @@ questions or corrections, open an issue/pull-request.
 
 TODO:
 - make and use a system-image for Julia
-- use binary for Julia install
-- at the moment Julia version 1.4 is hard-coded in the script, change that
 
 * The scripts tljh_install.sh and settings_tljh_julia.sh
 
@@ -204,7 +202,8 @@ best to first shutdown the server though.  That way you can get back
 to the good install.  For me, the size of the Linode backup was 32GB.
 
 This part of the install is done in the section ~Python and Julia
-package installs (system-wide)~ of [[./tljh_install.sh][tljh_install.sh]].
+package installs (system-wide)~ of [[./tljh_install.sh][tljh_install.sh]] which calls out to
+[[./julia_install.sh][julia_install.sh]] for the heavy lifting.
 
 ** Machine-wide Python packages install
 See
@@ -222,18 +221,17 @@ This will spew some warnings about "WARNING: The directory
 owned by the current user"; as far as I can tell, those are ok.
 
 ** Machine-wide Julia install
+This is in [[./julia_install.sh][julia_install.sh]].
+*** Install Julia binaries
 
-*** Conda install Julia
-
-#+begin_src
-conda install -c rmg julia
-#+end_src
+Essentially downloads Julia binaries, puts them into the right place
+and adds some sym-links. See setion ~## Download and unpack Julia~ of [[./julia_install.sh][julia_install.sh]].
 
 *** Julia package install
 This is where it gets a bit dicey.  I do the following:
 - the root user installs the system-wide packages using the depot path
   ~DEPOT_PATH[2]~ (this is a variable defined within running Julia)
-  and using an environment ~DEPOT_PATH[2]/environments/v1.4/~.
+  and using an environment ~DEPOT_PATH[2]/environments/<julia version>/~.
 - install the packages:
   - IJulia to actually make the Jupyter notebooks work
   - any other packages
@@ -251,7 +249,8 @@ export julia_global_depot=$(julia -e 'print(DEPOT_PATH[2])')
 mkdir -p $julia_global_depot
 
 # The corresponding environment is (another one could be chosen):
-export julia_global_env=$julia_global_depot/environments/v1.4
+export julia_global_env_dir=$(julia -e 'using Pkg; print(Pkg.envdir(DEPOT_PATH[2]))')
+export julia_global_env=$julia_global_env_dir/v$julia_version_short
 mkdir -p $julia_global_env
 touch $julia_global_env/Project.toml
 #+end_src
@@ -261,7 +260,7 @@ The Julia kernel needs to be copied to the location where TLJH can use it.
 
 #+begin_src
 julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add("IJulia"); Pkg.precompile()'
-cp -r ~/.local/share/jupyter/kernels/julia-* /opt/tljh/user/share/jupyter/kernels
+cp -r ~/.local/share/jupyter/kernels/julia-$julia_version_short /opt/tljh/user/share/jupyter/kernels/
 #+end_src
 
 Adapted from
@@ -276,7 +275,7 @@ Install more Julia packages as specified in the settings variable ~$julia_packag
 julia --project=$julia_global_env -e 'deleteat!(DEPOT_PATH, [1,3]); using Pkg; Pkg.update(); Pkg.add.(split(ENV["julia_packages"], '\'':'\'')); Pkg.precompile()'
 #+end_src
 
-Note, the precompilation should be usable for all users (I think).
+Note, the precompilation is usable for all users.
 
 **** Set the user LOAD_PATH to pick up the global packages
 
@@ -292,6 +291,10 @@ user is created.
 But now their own environment shadows the global one, to rectify this
 the global one needs to be specified explicitly:
 #+begin_src
+export julia_local_env_dir=$(julia -e 'using Pkg; print(Pkg.envdir("/etc/skel/.julia/"))')
+export julia_local_env=$julia_local_env_dir/v$julia_version_short
+mkdir -p $julia_local_env
+touch $julia_local_env/Project.toml
 mkdir -p /etc/skel/.julia/config
 echo "# Add load-path to globally installed packages" > /etc/skel/.julia/config/startup.jl
 echo "push!(LOAD_PATH, "\"$julia_global_env\"")" >> /etc/skel/.julia/config/startup.jl
