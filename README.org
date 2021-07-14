@@ -43,17 +43,18 @@ throughout the install, so it is assumed that this file is sourced
 before executing the commands listed below (it is sourced
 automatically in ~tljh_install.sh~).
 
-* Linode server setup
+* Linode (or any Ubutnu) server setup
 Linode.com offers Linux servers in the cloud.  Currently there are
 quite a few $100-credit offers going around, that's why I started here.
 But I think the script should work on any Ubuntu 20.04 system.
 
+*NOTE*: again, only run these scripts on a dedicated server!  Both for
+security reasons (TLJH-people recommendation) and because these
+scripts will likely mess with your setup.
+
 Install:
 - Ubuntu 20.04 LTS
 - choose at least 2GB of RAM (but much more for multi-user)
-
-Note that, for security reasons, it is best to run TLJH on a dedicated
-server.
 
 Boot the server.  Then, if you want HTTPS, set the domain record next.
 
@@ -98,7 +99,7 @@ The install is done within the section ~Server (Linode) base install~
 of the install script [[./tljh_install.sh][tljh_install.sh]].  It does:
 - update system via ~apt~
 - set time-zone
-- set networking stuff
+- set networking stuff by hand (this is disabled in the script as it does not work in general)
 - disable SSH password login, if there is a /root/.ssh/authorized_keys
   file (i.e. assuming there is a key for passwordless login). *Note*
   this potentially locks you out of the system, if so disable it.

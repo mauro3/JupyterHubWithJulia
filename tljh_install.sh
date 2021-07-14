@@ -17,9 +17,9 @@ fi
 # get settings
 . ./settings_tljh_julia.sh
 
-# IPv4 address of the server
-ip4=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-# ip4=$(hostname -i | cut - -d" " -f2)
+# # IPv4 address of the server
+# ip4=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+# # ip4=$(hostname -i | cut - -d" " -f2)
 
 ###############################
 ## Server (Linode) base install
@@ -31,13 +31,13 @@ apt upgrade -y
 
 timedatectl set-timezone $timezone
 
-## Networking
-echo $hostname > /etc/hostname
-hostname -F /etc/hostname
-# This sets the Fully Qualified Domain Name
-if [ ! -v $domain ]; then
-    echo $ip4 $fqdn >> /etc/hosts
-fi
+# ## Networking
+# echo $hostname > /etc/hostname
+# hostname -F /etc/hostname
+# # This sets the Fully Qualified Domain Name
+# if [ ! -v $domain ]; then
+#     echo $ip4 $fqdn >> /etc/hosts
+# fi
 
 ## SSH
 # disable password login if there is a SSH key for login
