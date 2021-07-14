@@ -67,18 +67,61 @@ apt install python3 python3-dev git curl -y
 ## Install TLJH
 curl -L https://tljh.jupyter.org/bootstrap.py | python3 - --admin $jupyteradmin
 
-## HTTPS setup with Let's encrypt (if $email4letsencrypt is not empty)
-if [ ! -v $email4letsencrypt ]; then
-    # https://tljh.jupyter.org/en/latest/howto/admin/https.html#howto-admin-https
-    tljh-config set https.enabled true
-    tljh-config set https.letsencrypt.email $email4letsencrypt
-    tljh-config add-item https.letsencrypt.domains $fqdn
-    # reload
-    # tljh-config show # setting can be checked
-    tljh-config reload proxy
-fi
-
 ## TLJH config
+##############
+
+## HTTPS setup
+case $https_setup in
+
+    none)
+	echo "HTTPS: Not setting up HTTPS"
+	;;
+
+    self-cert)
+	echo "HTPPS: Installing self-signed certificates"
+	# this just uses default inputs for the key & value. If you want to set them use
+	# a config file
+	# https://www.openssl.org/docs/man1.0.2/man1/openssl-req.html#CONFIGURATION-FILE-FORMAT
+	openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out tljh.crt -keyout tljh.key -batch
+	mv tljh.key tljh.crt /opt/tljh/state
+	tljh-config set https.enabled true
+	tljh-config set https.tls.key /opt/tljh/state/tljh.key
+	tljh-config set https.tls.cert  /opt/tljh/state/tljh.crt
+	tljh-config reload proxy
+	;;
+
+    existing-cert)
+	echo "HTPPS: Installing existing certificates"
+	cp $ssl_key $ssl_cert /opt/tljh/state
+	tljh-config set https.enabled true
+	tljh-config set https.tls.key /opt/tljh/state/$(basename $ssl_key)
+	tljh-config set https.tls.cert  /opt/tljh/state/$(basename $ssl_cert)
+	tljh-config reload proxy
+	;;
+
+    letsencrypt)
+	if [ ! -v $email4letsencrypt ]; then
+	    echo "HTPPS: Installing Let's Encrypt certificate"
+	    # https://tljh.jupyter.org/en/latest/howto/admin/https.html#howto-admin-https
+	    tljh-config set https.enabled true
+	    tljh-config set https.letsencrypt.email $email4letsencrypt
+	    tljh-config add-item https.letsencrypt.domains $fqdn
+	    tljh-config reload proxy
+	else
+	    echo 'HTTPS: Option "https_setup=letsencrypt" but no value given for option "email4letsencrypt".  Lets Encrypt needs an email. Exiting...'
+	    exit 1
+	fi
+	;;
+
+    *)
+	echo 'HTTPS: Option for "https_setup" not valid. Exiting'
+	exit 1
+	;;
+esac
+# run `tljh-config show` to check settings
+
+
+## more TLJH config
 
 # Set timeout after which server shuts down
 # https://tljh.jupyter.org/en/latest/topic/idle-culler.html?highlight=timeout
@@ -88,6 +131,7 @@ tljh-config set services.cull.timeout $tljh_timeout
 #+begin_src
 tljh-config set limits.memory $tljh_limits_memory
 tljh-config set limits.cpu $tljh_limits_cpu
+
 tljh-config reload
 
 #################################################
