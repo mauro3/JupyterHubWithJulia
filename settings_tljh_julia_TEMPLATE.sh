@@ -31,6 +31,9 @@ export PATH=/opt/tljh/user/bin:${PATH}
 
 ## For Julia
 
+# version of Julia to install
+export julia_version="1.6.1"
+
 # Packages to be installed system-wide, separate entries with ":"
 # (IJulia gets installed irrespective)
 export julia_packages=
