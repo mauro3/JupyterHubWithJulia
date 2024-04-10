@@ -1,6 +1,6 @@
 #+Title: How to install The Littlest JupyterHub (TLJH) with a Julia kernel
 
-I sure took me some time to figure this one out.  [[https://tljh.jupyter.org/en/latest/index.html][The Littlest JupyterHub]]
+It sure took me some time to figure this one out.  [[https://tljh.jupyter.org/en/latest/index.html][The Littlest JupyterHub]]
 install itself was a breeze but the Julia side of things was not as it
 was tricky to find the documentation.  Thanks to @fredrikekre for the help!
 
