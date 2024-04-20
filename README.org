@@ -31,11 +31,12 @@ TODO:
 
 * The scripts tljh_install.sh and settings_tljh_julia.sh
 
-There are two scripts in this repo (and they are the authoritative
+There are three scripts in this repo (and they are the authoritative
 source, although I will try to keep this README up to date):
 - settings-template is [[./settings_tljh_julia_TEMPLATE.sh][settings_tljh_julia_TEMPLATE.sh]] which needs to
   be filled in and renamed to ~settings_tljh_julia.sh~.
 - install script [[./tljh_install.sh][tljh_install.sh]] which does the full install
+  - this calls into [[./julia_install.sh][julia_install.sh]] to install Julia
 
 In the following I will describe what these scipts do.  If you execute
 the commands by hand:
@@ -198,7 +199,6 @@ login: https://tljh.jupyter.org/en/latest/howto/auth/firstuse.html
   https://tljh.jupyter.org/en/latest/install/custom-server.html
 - admin can reset admin password with
   https://tljh.jupyter.org/en/latest/howto/admin/admin-users.html
-
 
 * Package & Julia install
 This was the tricky bit to figure out, or more precisely, the Julia
